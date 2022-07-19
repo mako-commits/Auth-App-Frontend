@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Form, Button } from "react-bootstrap";
+import axios from "axios";
 
-type Props = {};
-const Login: React.FC<Props> = () => {
+const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [login, setLogin] = useState(false);
@@ -20,6 +20,24 @@ const Login: React.FC<Props> = () => {
     e.preventDefault();
     // make a popup alert showing the "submitted" text
     alert("Submited");
+
+    //configuration
+    const config = {
+      method: "post",
+      url: "https://auth-app--nodejs.herokuapp.com/login",
+      data: {
+        username,
+        password,
+      },
+    };
+    //make API call
+    axios(config)
+      .then((result) => {
+        setLogin(true);
+      })
+      .catch((error) => {
+        error = new Error("Unable to login");
+      });
   };
   return (
     <>
@@ -52,6 +70,15 @@ const Login: React.FC<Props> = () => {
         <Button variant="primary" type="submit" onClick={handleFormSubmit}>
           Login
         </Button>
+
+        {/* display staus message */}
+        {login ? (
+          <p className="text-success">Login was successful</p>
+        ) : (
+          <p className="text-danger">
+            Something went wrong with while logining
+          </p>
+        )}
       </Form>
     </>
   );

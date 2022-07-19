@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState } from "react";
 import { Form, Button } from "react-bootstrap";
 
@@ -24,7 +25,27 @@ const Register: React.FC<Props> = () => {
     e.preventDefault();
     // make a popup alert showing the "submitted" text
     alert("Submited");
+
+    //configuration
+    const config = {
+      method: "post",
+      url: "https://auth-app--nodejs.herokuapp.com/register",
+      data: {
+        username,
+        email,
+        password,
+      },
+    };
+    //make API call
+    axios(config)
+      .then((result) => {
+        setRegister(true);
+      })
+      .catch((error) => {
+        error = new Error("Unable to register user");
+      });
   };
+
   return (
     <>
       <h2>Register</h2>
@@ -69,6 +90,15 @@ const Register: React.FC<Props> = () => {
         <Button variant="primary" type="submit" onClick={handleFormSubmit}>
           Register
         </Button>
+
+        {/* display staus message */}
+        {register ? (
+          <p className="text-success">You have been regsitered successfully</p>
+        ) : (
+          <p className="text-danger">
+            Something went wrong with your registration
+          </p>
+        )}
       </Form>
     </>
   );
