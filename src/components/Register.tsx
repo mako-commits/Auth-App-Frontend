@@ -1,30 +1,61 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { Form, Button } from "react-bootstrap";
-
+import useInput from "../components/hooks/use-input";
 type Props = {};
-const Register: React.FC<Props> = () => {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [register, setRegister] = useState(false);
+//check if input field is empty
+const isNotEmpty = (value: string) => value.trim() !== "";
+//validate email
+const isEmail = (value: string | string[]) => value.includes("@");
+//check length of password
+const lenPassword = (value: string) => value.length >= 6;
 
-  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUsername(e.target.value);
-  };
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-  };
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
-  };
+const Register: React.FC<Props> = () => {
+  const [register, setRegister] = useState(false);
+  const [failedRegister, setFailedRegister] = useState(false);
+
+  const {
+    value: username,
+    isValid: usernameIsValid,
+    hasError: usernameHasError,
+    valueChangeHandler: usernameChangeHandler,
+    inputBlurHandler: usernameBlurHandler,
+    reset: resetUsername,
+  } = useInput(isNotEmpty);
+
+  const {
+    value: email,
+    isValid: emailIsValid,
+    valueChangeHandler: emailChangeHandler,
+    hasError: emailHasError,
+    inputBlurHandler: emailBlurHandler,
+    reset: resetEmail,
+  } = useInput(isEmail);
+
+  const {
+    value: password,
+    isValid: passwordIsValid,
+    valueChangeHandler: passwordChangeHandler,
+    hasError: passwordHasError,
+    inputBlurHandler: passwordBlurHandler,
+    reset: resetPassword,
+  } = useInput(lenPassword);
+
+  let formIsValid = false;
+
+  if (usernameIsValid && passwordIsValid && emailIsValid) {
+    formIsValid = true;
+  }
+
   const handleFormSubmit = (
     e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>
   ) => {
     // prevent the form from refreshing the whole page
     e.preventDefault();
-    // make a popup alert showing the "submitted" text
-    alert("Submited");
+
+    if (!formIsValid) {
+      return;
+    }
 
     //configuration
     const config = {
@@ -36,6 +67,7 @@ const Register: React.FC<Props> = () => {
         password,
       },
     };
+
     //make API call
     axios(config)
       .then((result) => {
@@ -43,8 +75,30 @@ const Register: React.FC<Props> = () => {
       })
       .catch((error) => {
         error = new Error("Unable to register user");
+        setFailedRegister(true);
       });
+    // console.log(username);
+    // console.log(email);
+    // console.log(password);
+    // make a popup alert showing the "submitted" text
+    alert("Submited");
+    resetUsername();
+    resetPassword();
+    resetEmail();
   };
+
+  //set username class based on validity
+  const usernameClasses = usernameHasError
+    ? "form-control invalid"
+    : "form-control";
+
+  //set email class based on validity
+  const emailClasses = emailHasError ? "form-control invalid" : "form-control ";
+
+  //set password class based on validity
+  const passwordClasses = passwordHasError
+    ? "form-control invalid"
+    : "form-control";
 
   return (
     <>
@@ -52,52 +106,69 @@ const Register: React.FC<Props> = () => {
       {/* onSubmit enables form submission using the Enter key */}
       <Form onSubmit={handleFormSubmit}>
         {/* Username Field*/}
-        <Form.Group className="mb-3" controlId="formBasicEmail">
+        <Form.Group className={usernameClasses} controlId="formBasicEmail">
           <Form.Label>Username</Form.Label>
           <Form.Control
             type="text"
             name="username"
             value={username}
-            onChange={handleUsernameChange}
+            onChange={usernameChangeHandler}
+            onBlur={usernameBlurHandler}
             placeholder="Enter a username"
           />
+          {usernameHasError && (
+            <p className="error-text">Please enter a a username.</p>
+          )}
         </Form.Group>
 
         {/* Email Field*/}
-        <Form.Group className="mb-3" controlId="formBasicEmail">
+        <Form.Group className={emailClasses} controlId="formBasicEmail">
           <Form.Label>Email</Form.Label>
           <Form.Control
             type="email"
             name="email"
             value={email}
-            onChange={handleEmailChange}
+            onChange={emailChangeHandler}
+            onBlur={emailBlurHandler}
             placeholder="Enter your email"
           />
+          {emailHasError && (
+            <p className="error-text">Please enter a valid email.</p>
+          )}
         </Form.Group>
 
         {/* Password Field*/}
-        <Form.Group className="mb-3" controlId="formBasicEmail">
+        <Form.Group className={passwordClasses} controlId="formBasicEmail">
           <Form.Label>Password</Form.Label>
           <Form.Control
             type="password"
             name="password"
             value={password}
-            onChange={handlePasswordChange}
+            onChange={passwordChangeHandler}
+            onBlur={passwordBlurHandler}
             placeholder="Enter a password"
           />
+          {passwordHasError && (
+            <p className="error-text">Password must be at least 6 characters</p>
+          )}
         </Form.Group>
+
         {/* Submit Button */}
-        <Button variant="primary" type="submit" onClick={handleFormSubmit}>
+        <Button
+          variant="primary"
+          type="submit"
+          onClick={handleFormSubmit}
+          disabled={!formIsValid}
+        >
           Register
         </Button>
 
-        {/* display staus message */}
-        {register ? (
+        {/* display status message */}
+        {register && (
           <p className="text-success">You have been regsitered successfully</p>
-        ) : (
-          <p className="text-danger">
-            Something went wrong with your registration
-          </p>
+        )}
+        {failedRegister && (
+          <p className="text-danger">Unable to register user</p>
         )}
       </Form>
     </>

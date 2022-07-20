@@ -4,9 +4,19 @@ import axios from "axios";
 
 const Login = () => {
   const [username, setUsername] = useState("");
+  const [usernameFieldTouched, setUsernameFieldTouched] = useState(false);
+
   const [password, setPassword] = useState("");
+  const [passwordFieldTouched, setPasswordFieldTouched] = useState(false);
   const [login, setLogin] = useState(false);
 
+  const enterdUsernameIsValid = username.trim() !== "";
+  const usernameInputIsInvalid = !enterdUsernameIsValid && usernameFieldTouched;
+
+  const enterdPasswordIsValid = password.trim() !== "";
+  const passwordInputIsInvalid = !enterdPasswordIsValid && passwordFieldTouched;
+
+  let formIsValid = false;
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUsername(e.target.value);
   };
