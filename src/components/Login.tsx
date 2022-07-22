@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Form, Button, Alert } from "react-bootstrap";
 import axios from "axios";
 import useInput from "./hooks/use-input";
+import Cookies from "universal-cookie";
 
+const cookies = new Cookies();
 //check if input field is empty
 const isNotEmpty = (value: string) => value.trim() !== "";
 
@@ -56,6 +58,13 @@ const Login = () => {
         setLogin(true);
         // make a popup alert showing the "submitted" text
         // alert("Login Successful");
+        //set the cookie
+        cookies.set("TOKEN", result.data.token, {
+          path: "/",
+        });
+
+        // redirect user to the auth page
+        window.location.href = "/auth";
       })
       .catch((error) => {
         error = new Error("Unable to login");

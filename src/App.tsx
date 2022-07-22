@@ -1,19 +1,36 @@
-import React from "react";
-import { Container, Row, Col } from "react-bootstrap";
-import Login from "./components/Login";
-import Register from "./components/Register";
+import { Routes, Route } from "react-router-dom";
+import Public from "./components/routes/Public";
+import Auth from "./components/routes/Auth";
+import Account from "./components/Account";
+import { Col, Container, Row } from "react-bootstrap";
+import ProtectedRoutes from "./components/routes/ProtectedRoute";
 
 function App() {
   return (
     <Container>
       <Row>
-        <Col xs={12} sm={12} md={6} lg={6}>
-          <Register />
-        </Col>
-        <Col xs={12} sm={12} md={6} lg={6}>
-          <Login />
+        <Col className="text-center">
+          <section id="navigation">
+            <a href="/">Home</a>
+            <a href="/free">Free Component</a>
+            <a href="/auth">Auth Component</a>
+          </section>
         </Col>
       </Row>
+
+      <Routes>
+        <Route path="/" element={<Account />} />
+        <Route path="/free" element={<Public />} />
+
+        <Route
+          path="/auth"
+          element={
+            <ProtectedRoutes>
+              <Auth />
+            </ProtectedRoutes>
+          }
+        />
+      </Routes>
     </Container>
   );
 }

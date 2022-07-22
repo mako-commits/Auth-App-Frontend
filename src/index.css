@@ -87,3 +87,16 @@ button:disabled:active {
 .error-text {
   color: #b40e0e;
 }
+/*==============================*/
+#navigation {
+  margin-top: 5%;
+  margin-bottom: 5%;
+}
+
+#navigation a {
+  margin-right: 10%;
+}
+
+#navigation a:last-child {
+  margin-right: 0;
+}
