@@ -1,8 +1,10 @@
 import axios from "axios";
 import React, { useState } from "react";
-import { Form, Button, Alert } from "react-bootstrap";
+import { Form, Button, Toast } from "react-bootstrap";
 import useInput from "../components/hooks/use-input";
+import Cookies from "universal-cookie";
 
+const cookies = new Cookies();
 //check if input field is empty
 const isNotEmpty = (value: string) => value.trim() !== "";
 //validate email
@@ -13,14 +15,15 @@ const lenPassword = (value: string) => value.length >= 6;
 const Register = () => {
   const [register, setRegister] = useState(false);
   const [failedRegister, setFailedRegister] = useState(false);
-
+  const [show, setShow] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const {
     value: username,
     isValid: usernameIsValid,
     hasError: usernameHasError,
     valueChangeHandler: usernameChangeHandler,
     inputBlurHandler: usernameBlurHandler,
-    reset: resetUsername,
+    // reset: resetUsername,
   } = useInput(isNotEmpty);
 
   const {
@@ -29,7 +32,7 @@ const Register = () => {
     valueChangeHandler: emailChangeHandler,
     hasError: emailHasError,
     inputBlurHandler: emailBlurHandler,
-    reset: resetEmail,
+    // reset: resetEmail,
   } = useInput(isEmail);
 
   const {
@@ -38,7 +41,7 @@ const Register = () => {
     valueChangeHandler: passwordChangeHandler,
     hasError: passwordHasError,
     inputBlurHandler: passwordBlurHandler,
-    reset: resetPassword,
+    // reset: resetPassword,
   } = useInput(lenPassword);
 
   let formIsValid = false;
@@ -72,12 +75,22 @@ const Register = () => {
     axios(config)
       .then((result) => {
         setRegister(true);
+        setShowSuccess(true);
+
+        //set the cookie
+        cookies.set("TOKEN", result.data.token, {
+          path: "/",
+        });
+
+        // redirect user to the auth page
+        window.location.href = "/auth";
         // make a popup alert showing the "submitted" text
         // alert("Registration Complete");
       })
       .catch((error) => {
         error = new Error("Unable to register user");
         setFailedRegister(true);
+        setShow(true);
         // make a popup alert showing the "submitted" text
         // alert("Registration failed");
       });
@@ -86,9 +99,9 @@ const Register = () => {
     // console.log(password);
     // make a popup alert showing the "submitted" text
     // alert("Submited");
-    resetUsername();
-    resetPassword();
-    resetEmail();
+    // resetUsername();
+    // resetPassword();
+    // resetEmail();
   };
 
   //set username class based on validity
@@ -105,20 +118,20 @@ const Register = () => {
     : "form-control";
 
   return (
-    <>
-      <h2>Register</h2>
+    <section className="register">
+      <h2 className="mb-4">Register your account</h2>
       {/* onSubmit enables form submission using the Enter key */}
       <Form onSubmit={handleFormSubmit}>
         {/* Username Field*/}
         <Form.Group className={usernameClasses} controlId="formBasicEmail">
-          <Form.Label>Username</Form.Label>
+          {/* <Form.Label>Username</Form.Label> */}
           <Form.Control
             type="text"
             name="username"
             value={username}
             onChange={usernameChangeHandler}
             onBlur={usernameBlurHandler}
-            placeholder="Enter a username"
+            placeholder="Username"
           />
           {usernameHasError && (
             <p className="error-text">Please enter a a username.</p>
@@ -127,14 +140,14 @@ const Register = () => {
 
         {/* Email Field*/}
         <Form.Group className={emailClasses} controlId="formBasicEmail">
-          <Form.Label>Email</Form.Label>
+          {/* <Form.Label>Email</Form.Label> */}
           <Form.Control
             type="email"
             name="email"
             value={email}
             onChange={emailChangeHandler}
             onBlur={emailBlurHandler}
-            placeholder="Enter your email"
+            placeholder="Email"
           />
           {emailHasError && (
             <p className="error-text">Please enter a valid email.</p>
@@ -143,14 +156,14 @@ const Register = () => {
 
         {/* Password Field*/}
         <Form.Group className={passwordClasses} controlId="formBasicEmail">
-          <Form.Label>Password</Form.Label>
+          {/* <Form.Label>Password</Form.Label> */}
           <Form.Control
             type="password"
             name="password"
             value={password}
             onChange={passwordChangeHandler}
             onBlur={passwordBlurHandler}
-            placeholder="Enter a password"
+            placeholder="Password"
           />
           {passwordHasError && (
             <p className="error-text">Password must be at least 6 characters</p>
@@ -170,28 +183,47 @@ const Register = () => {
 
         {/* display status message */}
         {register && (
-          <Alert
-            variant="success"
-            onClose={() => setRegister(false)}
-            dismissible
+          <Toast
+            onClose={() => setShowSuccess(false)}
+            show={showSuccess}
+            delay={3000}
+            autohide
+            bg="success"
           >
-            <Alert.Heading>You have been regsitered successfully</Alert.Heading>
-            <p>Proceed to login</p>
-          </Alert>
-          // <p className="text-success">You have been regsitered successfully</p>
+            <Toast.Header>
+              <img
+                src="holder.js/20x20?text=%20"
+                className="rounded me-2"
+                alt=""
+              />
+              <strong className="me-auto text-success">Success</strong>
+            </Toast.Header>
+            <Toast.Body>You have been regsitered successfully</Toast.Body>
+          </Toast>
         )}
         {failedRegister && (
-          <Alert
-            variant="danger"
-            onClose={() => setFailedRegister(false)}
-            dismissible
+          <Toast
+            onClose={() => setShow(false)}
+            show={show}
+            delay={3000}
+            autohide
+            bg="danger"
           >
-            <Alert.Heading>Unable to register user</Alert.Heading>
-            <p>Cross-check your credentials</p>
-          </Alert>
+            <Toast.Header>
+              <img
+                src="holder.js/20x20?text=%20"
+                className="rounded me-2"
+                alt=""
+              />
+              <strong className="me-auto text-danger">
+                Error: Unable to register user
+              </strong>
+            </Toast.Header>
+            <Toast.Body>Cross-check your credentials</Toast.Body>
+          </Toast>
         )}
       </Form>
-    </>
+    </section>
   );
 };
 

@@ -100,3 +100,9 @@ button:disabled:active {
 #navigation a:last-child {
   margin-right: 0;
 }
+
+.login,
+.register {
+  display: grid;
+  justify-content: center;
+}

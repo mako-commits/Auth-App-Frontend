@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Form, Button, Alert } from "react-bootstrap";
+import React, { useState } from "react";
+import { Form, Button, Toast } from "react-bootstrap";
 import axios from "axios";
 import useInput from "./hooks/use-input";
 import Cookies from "universal-cookie";
@@ -10,16 +10,19 @@ const isNotEmpty = (value: string) => value.trim() !== "";
 
 //check length of password
 const lenPassword = (value: string) => value.length >= 6;
+
 const Login = () => {
   const [login, setLogin] = useState(false);
   const [failedLogin, setFailedLogin] = useState(false);
+  const [show, setShow] = useState(false);
+
   const {
     value: username,
     isValid: usernameIsValid,
     hasError: usernameHasError,
     valueChangeHandler: usernameChangeHandler,
     inputBlurHandler: usernameBlurHandler,
-    reset: resetUsername,
+    // reset: resetUsername,
   } = useInput(isNotEmpty);
 
   const {
@@ -28,7 +31,7 @@ const Login = () => {
     valueChangeHandler: passwordChangeHandler,
     hasError: passwordHasError,
     inputBlurHandler: passwordBlurHandler,
-    reset: resetPassword,
+    // reset: resetPassword,
   } = useInput(lenPassword);
 
   let formIsValid = false;
@@ -56,8 +59,7 @@ const Login = () => {
     axios(config)
       .then((result) => {
         setLogin(true);
-        // make a popup alert showing the "submitted" text
-        // alert("Login Successful");
+
         //set the cookie
         cookies.set("TOKEN", result.data.token, {
           path: "/",
@@ -69,11 +71,11 @@ const Login = () => {
       .catch((error) => {
         error = new Error("Unable to login");
         setFailedLogin(true);
-        // alert("Login failed");
+        setShow(true);
       });
 
-    resetUsername();
-    resetPassword();
+    // resetUsername();
+    // resetPassword();
   };
 
   //set username class based on validity
@@ -87,35 +89,33 @@ const Login = () => {
     : "form-control";
 
   return (
-    <>
-      <h2>Login</h2>
+    <section className="login">
+      <h2 className="mb-4"> Sign in your account</h2>
       <Form onSubmit={handleFormSubmit}>
         {/* Username Field*/}
         <Form.Group className={usernameClasses} controlId="formBasicEmail">
-          <Form.Label>Username</Form.Label>
+          {/* <Form.Label>Username</Form.Label> */}
           <Form.Control
             type="text"
             name="username"
             value={username}
             onChange={usernameChangeHandler}
             onBlur={usernameBlurHandler}
-            placeholder="Enter a username"
+            placeholder="Username"
           />
-          {usernameHasError && (
-            <p className="error-text">Please enter a a username.</p>
-          )}
+          {usernameHasError && <p className="error-text">Username.</p>}
         </Form.Group>
 
         {/* Password Field*/}
         <Form.Group className={passwordClasses} controlId="formBasicEmail">
-          <Form.Label>Password</Form.Label>
+          {/* <Form.Label>Password</Form.Label> */}
           <Form.Control
             type="password"
             name="password"
             value={password}
             onChange={passwordChangeHandler}
             onBlur={passwordBlurHandler}
-            placeholder="Enter a password"
+            placeholder="Password"
           />
           {passwordHasError && (
             <p className="error-text">Password must be at least 6 characters</p>
@@ -133,27 +133,51 @@ const Login = () => {
         </Button>
 
         {/* display staus message */}
-        {login && (
-          <Alert variant="success" onClose={() => setLogin(false)} dismissible>
-            <Alert.Heading>Login Successful</Alert.Heading>
-            <p>Proceed to login</p>
-          </Alert>
-        )}
-        {failedLogin && (
-          <Alert
-            variant="danger"
-            onClose={() => setFailedLogin(false)}
-            dismissible
+        {/* {login && (
+          <Toast
+            onClose={() => setShowSucess(false)}
+            show={show}
+            delay={3000}
+            autohide
+            bg="success"
           >
-            <Alert.Heading>Login Failed</Alert.Heading>
-            <p>
+            <Toast.Header>
+              <img
+                src="holder.js/20x20?text=%20"
+                className="rounded me-2"
+                alt=""
+              />
+              <strong className="me-auto text-danger">Success</strong>
+            </Toast.Header>
+            <Toast.Body>Welcome</Toast.Body>
+          </Toast>
+        )} */}
+        {failedLogin && (
+          <Toast
+            onClose={() => setShow(false)}
+            show={show}
+            delay={3000}
+            autohide
+            bg="danger"
+          >
+            <Toast.Header>
+              <img
+                src="holder.js/20x20?text=%20"
+                className="rounded me-2"
+                alt=""
+              />
+              <strong className="me-auto text-danger">
+                Error: Login Failed
+              </strong>
+            </Toast.Header>
+            <Toast.Body>
               Make sure you register before you login or cross-check your
               credetials
-            </p>
-          </Alert>
+            </Toast.Body>
+          </Toast>
         )}
       </Form>
-    </>
+    </section>
   );
 };
 
